@@ -1,5 +1,8 @@
-// ✅ Your Google Sheet CSV link (KEEP YOUR EXISTING LINK)
+// ✅ Your Google Sheet CSV link
 const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXBAMBr27ht-lRC-2W2cJQdTd57m8j3kyend2EHdpB6zkMo4kFFKZGxzStDLITaJ3ojdipBLJvMfcT/pub?gid=150916621&single=true&output=csv';
+
+// Store data globally for table
+let allData = [];
 
 // ✅ Load and display data
 Papa.parse(sheetURL, {
@@ -7,47 +10,49 @@ Papa.parse(sheetURL, {
   header: true,
   complete: function(results) {
     // Filter: Keep only rows with Intervention Type, exclude "Total" row
-    const data = results.data.filter(row => {
+    allData = results.data.filter(row => {
       const type = row["Intervention Type"]?.trim();
       return type && type !== "**Total**" && type.toLowerCase() !== "total";
     });
     
-    if (data.length === 0) {
+    if (allData.length === 0) {
       document.querySelector('.chart-container').innerHTML = 
-        '<p style="text-align:center;color:#7f8c8d;padding:40px">No data found. Add data to your Google Sheet.</p>';
+        '<p style="text-align:center;color:#7f8c8d;padding:40px">No data found.</p>';
+      document.getElementById('table-body').innerHTML = 
+        '<tr><td colspan="6" style="text-align:center;padding:40px;color:#7f8c8d">No data found.</td></tr>';
       return;
     }
 
-    // 📊 Calculate stats (handle empty values with || 0)
-    const totalActions = data.reduce((sum, row) => sum + (parseInt(row["# of Actions"]) || 0), 0);
-    const totalCO2 = data.reduce((sum, row) => sum + (parseFloat(row["Annual tCO₂e Saved (conservative)"]) || 0), 0);
-    const totalSaved = data.reduce((sum, row) => sum + (parseFloat(row["amount saved till date"]) || 0), 0);
-    const uniqueTypes = new Set(data.map(row => row["Intervention Type"])).size;
+    // 📊 Calculate stats
+    const totalActions = allData.reduce((sum, row) => sum + (parseInt(row["# of Actions"]) || 0), 0);
+    const totalCO2 = allData.reduce((sum, row) => sum + (parseFloat(row["Annual tCO₂e Saved (conservative)"]) || 0), 0);
+    const totalSaved = allData.reduce((sum, row) => sum + (parseFloat(row["amount saved till date"]) || 0), 0);
+    const uniqueTypes = new Set(allData.map(row => row["Intervention Type"])).size;
 
-    // 📊 Display stats with nice formatting
+    // 📊 Display stats
     document.getElementById('total-actions').textContent = totalActions.toLocaleString('en-IN');
     document.getElementById('total-co2').textContent = totalCO2.toLocaleString('en-IN', {maximumFractionDigits: 0}) + ' t';
-    
-    // Format ₹: Show in Lakhs/Crores for large numbers
-    const formattedSaved = formatINR(totalSaved);
-    document.getElementById('total-saved').textContent = formattedSaved;
-    
+    document.getElementById('total-saved').textContent = formatINR(totalSaved);
     document.getElementById('total-interventions').textContent = uniqueTypes;
 
     // 📈 Render chart
-    renderChart(data);
+    renderChart(allData);
+    
+    // 📋 Render table
+    renderTable(allData, totalActions, totalCO2, totalSaved);
   },
   error: function(err) {
     console.error('PapaParse error:', err);
     document.querySelector('.chart-container').innerHTML = 
-      '<p style="text-align:center;color:#e74c3c;padding:40px">⚠️ Could not load data. Check your Google Sheet link.</p>';
+      '<p style="text-align:center;color:#e74c3c;padding:40px">⚠️ Could not load data.</p>';
+    document.getElementById('table-body').innerHTML = 
+      '<tr><td colspan="6" style="text-align:center;padding:40px;color:#e74c3c">⚠️ Could not load data.</td></tr>';
   }
 });
 
-// 💰 Helper: Format Indian Rupees (₹) nicely
+// 💰 Format Indian Rupees
 function formatINR(amount) {
   if (!amount || amount === 0) return '₹0';
-  
   const num = parseFloat(amount);
   if (num >= 10000000) {
     return '₹' + (num / 10000000).toFixed(2) + ' Cr';
@@ -60,12 +65,10 @@ function formatINR(amount) {
 
 // 📈 Render line chart
 function renderChart(data) {
-  // Aggregate CO2 by intervention type (handle empty values)
   const co2ByType = {};
   data.forEach(row => {
     const type = row["Intervention Type"]?.trim();
     if (!type) return;
-    
     const co2 = parseFloat(row["Annual tCO₂e Saved (conservative)"]) || 0;
     co2ByType[type] = (co2ByType[type] || 0) + co2;
   });
@@ -128,7 +131,6 @@ function renderChart(data) {
             minRotation: 45, 
             font: {size: 9},
             callback: function(value, index) {
-              // Shorten long labels on mobile
               const label = labels[index] || '';
               if (window.innerWidth < 480 && label.length > 15) {
                 return label.substring(0, 12) + '...';
@@ -141,4 +143,49 @@ function renderChart(data) {
       animation: { duration: 600 }
     }
   });
+}
+
+// 📋 Render data table
+function renderTable(data, totalActions, totalCO2, totalSaved) {
+  const tbody = document.getElementById('table-body');
+  const tfoot = document.getElementById('table-footer');
+  
+  // Clear loading state
+  tbody.innerHTML = '';
+  
+  // Add rows for each intervention
+  data.forEach(row => {
+    const tr = document.createElement('tr');
+    
+    const interventionType = row["Intervention Type"] || '';
+    const actions = row["# of Actions"] || '0';
+    const activity = row["Total Activity (e.g., kW, m³, units)"] || '-';
+    const co2Saved = row["Annual tCO₂e Saved (conservative)"] || '0';
+    const amountSaved = row["amount saved till date"] || '';
+    const source = row["Emission Factor Source"] || '';
+    
+    tr.innerHTML = `
+      <td><strong>${interventionType}</strong></td>
+      <td>${parseInt(actions).toLocaleString('en-IN')}</td>
+      <td>${activity}</td>
+      <td>${parseFloat(co2Saved).toLocaleString('en-IN', {maximumFractionDigits:0})} t</td>
+      <td>${amountSaved ? '₹' + parseFloat(amountSaved).toLocaleString('en-IN') : '-'}</td>
+      <td style="font-size:0.85rem;color:var(--gray)">${source || '-'}</td>
+    `;
+    
+    tbody.appendChild(tr);
+  });
+  
+  // Add total row
+  const totalRow = document.createElement('tr');
+  totalRow.innerHTML = `
+    <td><strong>TOTAL</strong></td>
+    <td><strong>${totalActions.toLocaleString('en-IN')}</strong></td>
+    <td>-</td>
+    <td><strong>${totalCO2.toLocaleString('en-IN', {maximumFractionDigits:0})} t</strong></td>
+    <td><strong>${formatINR(totalSaved)}</strong></td>
+    <td>-</td>
+  `;
+  
+  tfoot.appendChild(totalRow);
 }
