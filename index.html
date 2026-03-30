@@ -1,19 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Live Data Site</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Earth Carbon Actions | Live Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <!-- Optional: Add favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
 </head>
 <body>
-    <div class="container">
-        <h1>Live Spreadsheet Data</h1>
-        <div id="data-container" class="grid">
-            <p>Loading data from Google Sheets...</p>
-        </div>
+  <!-- Hero Header -->
+  <header>
+    <h1>🌍 Earth Carbon Actions</h1>
+    <p>Live dashboard of verified low-carbon interventions and their impact</p>
+  </header>
+
+  <!-- Auto-Calculated Stats Bar -->
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat-card">
+      <span class="number" id="total-actions">–</span>
+      <span class="label">Total Actions</span>
     </div>
-    <script src="script.js"></script>
+    <div class="stat-card">
+      <span class="number" id="total-co2">–</span>
+      <span class="label">tCO₂e Saved/Year</span>
+    </div>
+    <div class="stat-card">
+      <span class="number" id="total-saved">–</span>
+      <span class="label">₹ Saved to Date</span>
+    </div>
+    <div class="stat-card">
+      <span class="number" id="total-interventions">–</span>
+      <span class="label">Intervention Types</span>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <h2 class="section-title">📋 Recent Interventions</h2>
+    <div id="data-container" class="grid">
+      <div class="loading">Loading live data</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>Powered by <a href="https://earthcarbonfoundation.org" target="_blank">Earth Carbon Foundation</a> • 
+    Data updated live from Google Sheets</p>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
