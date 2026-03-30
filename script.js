@@ -25,8 +25,8 @@ Papa.parse(sheetURL, {
     document.getElementById('total-saved').textContent = '₹' + (totalSaved/100000).toFixed(2) + ' L';
     document.getElementById('total-interventions').textContent = uniqueTypes;
 
-    // 📈 Render bar chart
-    renderChart(data);
+    // 📈 Render LINE chart
+    renderLineChart(data);
   },
   error: function(err) {
     console.error('PapaParse error:', err);
@@ -35,8 +35,8 @@ Papa.parse(sheetURL, {
   }
 });
 
-// 📈 Render bar chart using Chart.js
-function renderChart(data) {
+// 📈 Render LINE chart using Chart.js
+function renderLineChart(data) {
   // Aggregate CO2 by intervention type
   const co2ByType = {};
   data.forEach(row => {
@@ -46,49 +46,4 @@ function renderChart(data) {
   });
 
   const labels = Object.keys(co2ByType);
-  const values = Object.values(co2ByType);
-
-  const ctx = document.getElementById('co2-chart').getContext('2d');
-  
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Annual tCO₂e Saved',
-        data: values,
-        backgroundColor: 'rgba(39, 174, 96, 0.7)',
-        borderColor: 'rgba(30, 132, 73, 1)',
-        borderWidth: 2,
-        borderRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              return `${context.parsed.y.toLocaleString(undefined, {maximumFractionDigits:1})} tCO₂e`;
-            }
-          }
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          title: { display: true, text: 'tCO₂e Saved / Year' },
-          grid: { color: 'rgba(0,0,0,0.05)' }
-        },
-        x: {
-          title: { display: true, text: 'Intervention Type' },
-          grid: { display: false },
-          ticks: { maxRotation: 45, minRotation: 45, font: {size: 11} }
-        }
-      },
-      animation: { duration: 600 }
-    }
-  });
-}
+  const values =
