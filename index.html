@@ -34,9 +34,32 @@
   </div>
 
   <div class="container">
+    <!-- Chart Section -->
     <h2 class="section-title">📈 Annual tCO₂e Saved by Intervention</h2>
     <div class="chart-container">
       <canvas id="co2-chart"></canvas>
+    </div>
+
+    <!-- Table Section -->
+    <h2 class="section-title">📋 Detailed Interventions Data</h2>
+    <div class="table-container">
+      <table id="data-table">
+        <thead>
+          <tr>
+            <th>Intervention Type</th>
+            <th># of Actions</th>
+            <th>Total Activity</th>
+            <th>Annual tCO₂e Saved</th>
+            <th>Amount Saved (₹)</th>
+            <th>Emission Factor Source</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr><td colspan="6" style="text-align:center;padding:40px;">Loading data...</td></tr>
+        </tbody>
+        <tfoot id="table-footer">
+        </tfoot>
+      </table>
     </div>
   </div>
 
