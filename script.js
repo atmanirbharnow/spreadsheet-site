@@ -3,7 +3,7 @@ const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXBAMBr27ht-l
 
 const container = document.getElementById('data-container');
 
-// ✅ Load and display data
+// ✅ Load and display data with YOUR headers
 Papa.parse(sheetURL, {
     download: true,
     header: true,
@@ -13,22 +13,30 @@ Papa.parse(sheetURL, {
         
         // Loop through each row and create a card
         data.forEach(row => {
-            // Skip empty rows; adjust 'row.Name' to match your sheet headers
-            if (row.Name && row.Name.trim() !== '') {
+            // Skip empty rows; use YOUR header name with brackets for spaces
+            const intervention = row["Intervention Type"];
+            
+            if (intervention && intervention.trim() !== '') {
                 const card = document.createElement('div');
                 card.className = 'card';
+                
+                // Build card content using YOUR column names
                 card.innerHTML = `
-                    <h2>${row.Name}</h2>
-                    <p>${row.Description || ''}</p>
-                    ${row.Price ? `<strong>₹${row.Price}</strong>` : ''}
+                    <h2>${row["Intervention Type"]}</h2>
+                    <p><strong>Actions:</strong> ${row["# of Actions"] || 'N/A'}</p>
+                    <p><strong>Activity:</strong> ${row["Total Activity (e.g., kW, m³, units)"] || ''}</p>
+                    <p><strong>Annual tCO₂e Saved:</strong> ${row["Annual tCO₂e Saved (conservative)"] || ''}</p>
+                    <p><strong>Amount Saved:</strong> ₹${row["amount saved till date"] || '0'}</p>
+                    <small><em>Source: ${row["Emission Factor Source"] || ''}</em></small>
                 `;
+                
                 container.appendChild(card);
             }
         });
         
         // Show message if no data found
-        if (data.length === 0 || !data[0]?.Name) {
-            container.innerHTML = '<p>No data found. Check your Google Sheet headers.</p>';
+        if (data.length === 0 || !data[0]?.["Intervention Type"]) {
+            container.innerHTML = '<p>No data found. Check your Google Sheet has data in Row 2+.</p>';
         }
     },
     error: function(err) {
